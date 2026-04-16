@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Stata logs / temp
+*.log
+*.tmp
+
+# Large generated outputs
+outputs/
+artifacts/
+reports/
+runs/
+
+# Optional: local caches
+.cache/
+
+# If you do not want to upload heavy raw data, uncomment this:
+# data_construct/data/
+# missing_forecasting/data/
+# expimp_forcasting/data/
+# eda/data/
+*.csv
+*.xlsx
+*.xls
