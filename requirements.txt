@@ -10,3 +10,5 @@ openpyxl
 jupyter
 ipykernel
 scikit-learn
+statsmodels
+xlrd
