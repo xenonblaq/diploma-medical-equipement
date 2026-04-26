@@ -37,6 +37,8 @@ cap mkdir "$out"
 cap mkdir "$logdir"
 
 log using "$logdir/ppml_pipeline.log", replace text
+
+
 ****************************************************
 * REQUIRED PACKAGES
 ****************************************************
@@ -131,6 +133,31 @@ est store re_nr
 hausman fe_nr re_nr, sigmamore
 
 restore
+
+
+****************************************************
+* TEST OF TIME FIXED EFFECTS IN FE MODEL
+****************************************************
+use "$data\country_month_panel.dta", clear
+format stata_mdate %tm
+
+keep if value > 0
+gen ln_value = ln(value)
+
+xtset country_id stata_mdate
+
+* FE model with time dummies
+xtreg ln_value ///
+    sanctions_proxy_smooth ///
+    unfriendly_post brics_post cis_post ///
+    cpi_yoy ip_yoy ex_yoy logistics_exposure_distw ///
+    i.stata_mdate, ///
+    fe vce(cluster country_id)
+
+est store fe_time
+
+* Joint significance of all time fixed effects
+testparm i.stata_mdate
 
 ****************************************************
 * ERROR-STRUCTURE DIAGNOSTICS IN LINEAR FE ANALOG
@@ -265,22 +292,24 @@ xtset country_hs_id stata_mdate
 
 * Main heterogeneous sanctions model
 ppmlhdfe value ///
-    c.sanctions_proxy_smooth##i.hs_id ///
-    cpi_yoy ip_yoy ex_yoy logistics_exposure_distw, ///
+    c.sanctions_proxy_smooth_l1##i.hs_id ///
+    cpi_yoy_l5 ip_yoy ex_yoy logistics_exposure_distw, ///
     absorb(country_hs_id stata_mdate) ///
     vce(cluster country_id)
 
 est store M3_hs_sanctions
 
 * Joint test: does the sanctions slope differ across HS codes?
-testparm i.hs_id#c.sanctions_proxy_smooth
+testparm i.hs_id#c.sanctions_proxy_smooth_l1
 
 levelsof hs_id, local(hslist)
 
 foreach h of local hslist {
     di "HS = `h'"
-    lincom _b[c.sanctions_proxy_smooth] + _b[`h'.hs_id#c.sanctions_proxy_smooth]
+    lincom _b[c.sanctions_proxy_smooth_l1] + _b[`h'.hs_id#c.sanctions_proxy_smooth_l1]
 }
+
+tab hs_id hs
 
 
 
@@ -293,7 +322,7 @@ xtset country_hs_id stata_mdate
 
 ppmlhdfe value ///
     unfriendly_post brics_post cis_post ///
-    cpi_yoy ip_yoy ex_yoy logistics_exposure_distw, ///
+    cpi_yoy_l5 ip_yoy ex_yoy logistics_exposure_distw, ///
     absorb(country_hs_id stata_mdate) ///
     vce(cluster country_id)
 
@@ -307,7 +336,7 @@ ppmlhdfe value ///
     i.hs_id#i.unfriendly_post ///
     i.hs_id#i.brics_post ///
     i.hs_id#i.cis_post ///
-    cpi_yoy ip_yoy ex_yoy logistics_exposure_distw, ///
+    cpi_yoy_l5 ip_yoy ex_yoy logistics_exposure_distw, ///
     absorb(country_hs_id stata_mdate) ///
     vce(cluster country_id)
 	
@@ -321,7 +350,7 @@ esttab M1_cm_sanctions M2_cm_blocs M3_hs_sanctions M4_hs_blocs ///
     title("Main PPML models for sanctions intensity, bloc reallocation, and HS heterogeneity")
 	
 	
-	****************************************************
+****************************************************
 * R1. ALTERNATIVE SANCTIONS PROXIES
 ****************************************************
 use "$data\country_month_panel.dta", clear
