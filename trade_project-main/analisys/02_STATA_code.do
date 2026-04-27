@@ -19,16 +19,12 @@
 * Set the main directories for data, logs, and outputs.
 * Replace the global proj path with your own local path.
 ****************************************************
-global proj "/Users/your_name/path_to_project"
-global data "$proj/data_prepared_for_stata"
-global out  "$proj/stata_output"
-global logdir "$proj/logs"
 clear all
 set more off
 set linesize 255
 capture log close
 
-global proj "C:\users\crossover\Desktop\My Mac Desktop\ДИПЛОМ\trade_project-main\analisys"
+global proj "C:\Users\Admin\Desktop\ДИПЛОМ. GIT\diploma-medical-equipement\trade_project-main\analisys"
 global data "$proj/data"
 global out  "$proj/stata_output"
 global logdir "$proj/logs"
@@ -312,6 +308,14 @@ foreach h of local hslist {
 tab hs_id hs
 
 
+matrix b = e(b)
+matrix V = e(V)
+
+putexcel set "$data/m3_b.xlsx", replace
+putexcel A1 = matrix(b), names
+
+putexcel set "$data/m3_V.xlsx", replace
+putexcel A1 = matrix(V), names
 
 ****************************************************
 * M4. COUNTRY-HS-MONTH BLOC MODEL
